@@ -1,0 +1,149 @@
+{
+  "entities": {
+    "Block": {
+      "title": "Block",
+      "description": "A validated block in the TANTA Chain ledger",
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string",
+          "description": "SHA-256 hash of the block"
+        },
+        "parentHash": {
+          "type": "string",
+          "description": "Hash of the parent block"
+        },
+        "merkleRoot": {
+          "type": "string",
+          "description": "Merkle root hash of the transactions"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Epoch timestamp of when the block was mined"
+        },
+        "height": {
+          "type": "integer",
+          "description": "The block height in the blockchain"
+        },
+        "nonce": {
+          "type": "integer",
+          "description": "The proof-of-work nonce"
+        },
+        "difficulty": {
+          "type": "integer",
+          "description": "Mining difficulty (number of leading zeroes)"
+        },
+        "miner": {
+          "type": "string",
+          "description": "Miner wallet address who solved the block"
+        },
+        "reward": {
+          "type": "number",
+          "description": "Total block reward (subsidy + transaction fees)"
+        },
+        "transactionsJson": {
+          "type": "string",
+          "description": "Serialized transactions array in the block"
+        }
+      },
+      "required": [
+        "hash",
+        "parentHash",
+        "merkleRoot",
+        "timestamp",
+        "height",
+        "nonce",
+        "difficulty",
+        "miner",
+        "reward",
+        "transactionsJson"
+      ]
+    },
+    "MempoolTransaction": {
+      "title": "MempoolTransaction",
+      "description": "A pending transaction in the mempool",
+      "type": "object",
+      "properties": {
+        "txid": {
+          "type": "string",
+          "description": "Transaction identifier (hash)"
+        },
+        "isCoinbase": {
+          "type": "boolean",
+          "description": "Whether this is a coinbase transaction"
+        },
+        "fee": {
+          "type": "number",
+          "description": "Transaction miner fee"
+        },
+        "timestamp": {
+          "type": "integer",
+          "description": "Epoch timestamp of transaction broadcast"
+        },
+        "blockHeight": {
+          "type": "integer",
+          "description": "Block height where transaction is included (-1 for mempool)"
+        },
+        "vinJson": {
+          "type": "string",
+          "description": "Serialized transaction inputs"
+        },
+        "voutJson": {
+          "type": "string",
+          "description": "Serialized transaction outputs"
+        }
+      },
+      "required": [
+        "txid",
+        "isCoinbase",
+        "fee",
+        "timestamp",
+        "blockHeight",
+        "vinJson",
+        "voutJson"
+      ]
+    },
+    "Wallet": {
+      "title": "Wallet",
+      "description": "A cryptographic keypair wallet in the TANTA Chain ledger",
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "The derived Tanta public address"
+        },
+        "privateKey": {
+          "type": "string",
+          "description": "The private key associated with the address"
+        },
+        "createdAt": {
+          "type": "integer",
+          "description": "Timestamp of wallet creation"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "Identifier of the creator (e.g. email or anonymous)"
+        }
+      },
+      "required": [
+        "address",
+        "privateKey",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/blocks/{blockId}": {
+      "schema": "Block",
+      "description": "Public ledger of blocks mined on the mainnet"
+    },
+    "/mempool/{txId}": {
+      "schema": "MempoolTransaction",
+      "description": "Unconfirmed pending transactions waiting to be mined"
+    },
+    "/wallets/{address}": {
+      "schema": "Wallet",
+      "description": "Cryptographic wallet identities registered and shared globally on the blockchain network"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net: Default Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Hardened Reusable Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Strict validation of Block entity structure
+    function isValidBlock(data) {
+      return data.hash is string && data.hash.size() <= 128
+          && data.parentHash is string && data.parentHash.size() <= 128
+          && data.merkleRoot is string && data.merkleRoot.size() <= 128
+          && data.timestamp is int
+          && data.height is int
+          && data.nonce is int
+          && data.difficulty is int
+          && data.miner is string && data.miner.size() <= 128
+          && data.reward is number
+          && data.transactionsJson is string && data.transactionsJson.size() <= 1048576;
+    }
+
+    // Strict validation of unconfirmed Mempool Transaction structure
+    function isValidTx(data) {
+      return data.txid is string && data.txid.size() <= 128
+          && data.isCoinbase is bool
+          && data.fee is number
+          && data.timestamp is int
+          && data.blockHeight is int
+          && data.vinJson is string && data.vinJson.size() <= 262144
+          && data.voutJson is string && data.voutJson.size() <= 262144;
+    }
+
+    // Strict validation of Wallet structure
+    function isValidWallet(data) {
+      return data.address is string && data.address.size() <= 128
+          && data.privateKey is string && data.privateKey.size() <= 128
+          && data.createdAt is int
+          && (!data.keys().contains('createdBy') || data.createdBy is string);
+    }
+
+    // --- Blockchain Blocks Ledger ---
+    match /blocks/{blockId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidId(blockId) && isValidBlock(request.resource.data);
+      // Mainnet blocks are strictly immutable once mined and appended
+      allow update, delete: if false;
+    }
+
+    // --- Unconfirmed Pending Transactions (Mempool) ---
+    match /mempool/{txId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidId(txId) && isValidTx(request.resource.data);
+      // Miners can remove unconfirmed transactions after successfully mining them into a block
+      allow delete: if isSignedIn() && isValidId(txId);
+      allow update: if false;
+    }
+
+    // --- Cryptographic Wallet Identity Directory ---
+    match /wallets/{walletId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidId(walletId) && isValidWallet(request.resource.data);
+      allow delete: if isSignedIn() && isValidId(walletId);
+      allow update: if false; // Wallets are immutable once generated
+    }
+  }
+}

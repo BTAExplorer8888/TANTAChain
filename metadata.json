@@ -1,0 +1,6 @@
+{
+  "name": "TANTA Chain Explorer & RPC",
+  "description": "RPC console, mainnet blockchain simulator, and explorer for TANTA Chain with BTC-like supply mechanics and Google Drive-backed database synchronization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
